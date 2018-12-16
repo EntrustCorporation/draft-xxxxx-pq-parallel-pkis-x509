@@ -103,11 +103,8 @@ During the transition to post-quantum cryptography, the deployment of cryptograp
 - Algorithm strength uncertainty: During the transition period, some post-quantum signature and encryption algorithms will not be fully trusted, while also the trust in legacy public key algorithms will also start to erode.  A relying party may learn some time after certificate deployment that a public key algorithm has become untrustworthy, but in the interim, they may not know which algorithm an adversary has compromised.
 - Backwards compatibility: During the transition period, post-quantum algorithms will not be supported by all clients.
 
-This document proposes two mechanisms deployed together to address these two concerns, respectively: formats for encoding multiple public keys into the existing public key field, and parallel PKI hierarchies in which each entity is issued both a classic (traditional single-key) and composite (multi-key, multi-signature) certificate such that non composite-aware clients will continue functioning, and composite-aware clients can detect downgrade attacks.
+This document assumes that algorithm strength uncertainty has already been solved, for example using the mechanism in draft-xxxxx-pq-composite-certs-x509, and provides a mechanism to address backwards compatibility: parallel PKI hierarchies in which each entity is issued both a classic (traditional single-key) and composite (multi-key, multi-signature) certificate such that non composite-aware clients will continue functioning, and composite-aware clients can detect downgrade attacks.
 
-EDNOTE: Include a glossary to define the terms:
-  - Traditional certificate
-  - Composite certificate
 
 <!-- End of Introduction section -->
 
@@ -118,6 +115,19 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 as described in BCP 14 {{RFC2119}} {{RFC8174}} when, and only when, they appear in all capitals,
 as shown here.
 
+This document defines the following terms:
+
+EDNOTE: Look up the standard way to do glossaries in RFCs.
+
+EDNOTE: I think there's a proper way to reference another RFC or I-D. Look up.
+
+Traditional Certificate:
+
+An X.509 certificate conforming to RFC 5280. In particular, a certificate containing a single subject public key, and a single issuer signature.
+
+Composite certificate:
+
+An X.509 certificate containing two or more subject public keys and two or more issuer signatures, for example, as defined in draft-xxxxx-pq-composite-certs-x509.
 
 # Comparison with draft-truskovsky-lamps-pq-hybrid-x509
 EDNOTE: This section will explain the differences from {{I-D.truskovsky-lamps-pq-hybrid-x509}}. IPR Claims should be mentioned here if necessary. Other things to consider are the things we discussed in an email thread like simplicity and format, inadvertnt implementation errors, algorithm agility.

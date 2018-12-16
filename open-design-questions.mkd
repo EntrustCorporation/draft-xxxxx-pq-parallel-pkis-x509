@@ -1,0 +1,18 @@
+# Backwards Compatibility
+- One could link the two PKIs by including a new extension declaring the existence of alternative certificates. Otherwise, downgrade
+attacks might be possible, compromising post-quantum-aware clients if a legacy server also exists. What form should that take?
+  - One option is a poison extension - non-critical extension specifying that if the client supports post-quantum algorithms, it can't use the certificate.
+    - Ideally this would be phrased in a non-post-quantum-specific way
+      - list algorithms that other certificates use
+    - Alternatively, simply "If you understand this OID, then fail".
+- One could link the two PKIs by including a new extension in each certificate identifying the corresponding certificate in the alternate PKI
+(e.g. by issuer and serial number). The data common to both certificates (e.g. name information) could be compared by a relying party
+supporting both certificate types.
+  - If they support both types, why not use the composite certificates described in the next section?
+  - How much certificate content would actually be the same? These fields probably wouldn't be:
+    - Validity periods
+    - Revocation status
+    - AKI, SKI
+    - Certificate policy
+- The downgrade problem may not be solvable by adding extensions to the legacy cert. Proof: an attacker having compromised the
+legacy algorithm could take the extension out of the certificate and re-sign it.
