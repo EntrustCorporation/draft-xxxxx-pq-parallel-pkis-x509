@@ -172,7 +172,7 @@ This section defines a PKI hierarchy structure whereby each entity is issued bot
 ## PCKS#10 {#sec-p10}
 EDNOTE: This subsection talks about the new CSR attributes. It will also talk about how requesting these certs will work.
 
-Once an entity in the PKI has a valid composite certificate, it MAY send subsequent certificate enrollment requests for traditional certificates containing a public key from the composite certificate using the same DN. If the CA has previously issued one or more currently valid composite certificates for the same entity, containing that public key, and containing the same list of SANs, then it MUST include one <wtv_we_call_it> extension pointing to each such certificate, and MUST set the certificate expiry date to be not later than the expiry date of the referenced composite certificate with the {earliest expiry date?, latest expiry date?}.
+Once an entity in the PKI has a valid composite certificate, it MAY send subsequent certificate enrollment requests for traditional certificates containing a public key from the composite certificate using the same DN. If the CA has previously issued one or more currently valid composite certificates for the same entity, containing that public key, and containing the same list of SANs, then it MUST include one "wtv_we_call_it" extension pointing to each such certificate, and MUST set the certificate expiry date to be not later than the expiry date of the referenced composite certificate with the {earliest expiry date?, latest expiry date?}.
 
 
 # Certificate Revocation {#sec-revocation}
@@ -181,7 +181,7 @@ EDNOTE: This subsection will talk about compromises of keys, revocation and how 
 ## Certificate Revocation Lists (CRLs) {#sec-crl}
 EDNOTE: A mention to OCSP implications should be made.
 
-EDNOTE: The mechanism for globally revoking an algorithm should be mentioned, along with the practical suggestion that an algorithm MAY be globally revoked on the composite PKI's CRL, but not on the traditional PKI.
+EDNOTE: The mechanism for globally revoking an algorithm should be mentioned, along with the practical suggestion that an algorithm MAY be globally revoked on the composite PKI's CRL, but not on the traditional PKI (unless that suggestion should be entirely moved to the parallel-pkis draft?). Need to think about backwards-compatibility of this CRL extension? Do we need to suggest that CAs publish composite and traditional certs on separate CRLs for this reason?
 
 ## End-Entity Requested Revocation
 EDNOTE: Be explicit about whether a single-key revocation request has the authority to revoke the composite cert, and vice-versa.

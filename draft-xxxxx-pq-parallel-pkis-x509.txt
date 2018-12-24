@@ -1,0 +1,448 @@
+
+
+
+
+XXX WG                                            P. Kampanakis (Editor)
+Internet-Draft                                             Cisco Systems
+Intended status: Standards Track                       December 24, 2018
+Expires: June 27, 2019
+
+
+     Composite Postquantum Keys and Signatures in PKIX Certificates
+                 draft-xxxxx-pq-composite-sigs-x509-00
+
+Abstract
+
+   EDNOTE: This will be the abstract
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on June 27, 2019.
+
+Copyright Notice
+
+   Copyright (c) 2018 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (https://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+
+
+
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 1]
+
+Internet-Draft               Composite Certs               December 2018
+
+
+Table of Contents
+
+   1.  Change Log  . . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   3.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   4.  Comparison with draft-truskovsky-lamps-pq-hybrid-x509 . . . .   4
+   5.  Composite Certificates  . . . . . . . . . . . . . . . . . . .   4
+     5.1.  Composite Signatures  . . . . . . . . . . . . . . . . . .   4
+     5.2.  Composite Public Keys . . . . . . . . . . . . . . . . . .   5
+   6.  Parallel PKI hierarchies  . . . . . . . . . . . . . . . . . .   5
+   7.  Certificate Enrollment  . . . . . . . . . . . . . . . . . . .   5
+   8.  Certificate Revocation  . . . . . . . . . . . . . . . . . . .   5
+     8.1.  Certificate Revocation Lists (CRLs) . . . . . . . . . . .   5
+     8.2.  End-Entity Requested Revocation . . . . . . . . . . . . .   6
+   9.  New Algorithm Identifiers . . . . . . . . . . . . . . . . . .   6
+   10. In Practice . . . . . . . . . . . . . . . . . . . . . . . . .   6
+   11. Implications for existing standards . . . . . . . . . . . . .   6
+   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+   13. Security Considerations . . . . . . . . . . . . . . . . . . .   7
+   14. Contributors  . . . . . . . . . . . . . . . . . . . . . . . .   7
+   15. Acknowledgenents  . . . . . . . . . . . . . . . . . . . . . .   7
+   16. References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     16.1.  Normative References . . . . . . . . . . . . . . . . . .   7
+     16.2.  Informative References . . . . . . . . . . . . . . . . .   8
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   8
+
+1.  Change Log
+
+   EDNOTE: Remove this section before publication.
+
+   draft-xxxxx-pq-composite-sigs-x509-00
+
+   o  Beginning of the draft
+
+2.  Introduction
+
+   EDNOTE: This will be the Introduction
+
+   Figure 1 shows an example figure.
+
+
+
+
+
+
+
+
+
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 2]
+
+Internet-Draft               Composite Certs               December 2018
+
+
+           STuPiD   ```````````````````````````````,
+           Script   <----------------------------. ,
+                                                 | ,
+             ^ ,                                 | ,
+             | ,                                 | ,
+       (1)   | ,                                 | ,  (3)
+       POST  | ,                                 | ,  GET
+             | ,                                 | ,
+             | v                                 | v
+
+           Peer A   ----------------------->   Peer B
+                              (2)
+                          out-of-band
+                          Notification
+
+                         Figure 1: Figure example
+
+   During the transition to post-quantum cryptography, the deployment of
+   cryptographic certificates using post-quantum algorithms will face
+   two challenges
+
+   o  Algorithm strength uncertainty: During the transition period, some
+      post-quantum signature and encryption algorithms will not be fully
+      trusted, while also the trust in legacy public key algorithms will
+      also start to erode.  A relying party may learn some time after
+      certificate deployment that a public key algorithm has become
+      untrustworthy, but in the interim, they may not know which
+      algorithm an adversary has compromised.
+
+   o  Backwards compatibility: During the transition period, post-
+      quantum algorithms will not be supported by all clients.
+
+   This document assumes that algorithm strength uncertainty has already
+   been solved, for example using the mechanism in draft-xxxxx-pq-
+   composite-certs-x509, and provides a mechanism to address backwards
+   compatibility: parallel PKI hierarchies in which each entity is
+   issued both a classic (traditional single-key) and composite (multi-
+   key, multi-signature) certificate such that non composite-aware
+   clients will continue functioning, and composite-aware clients can
+   detect downgrade attacks.
+
+3.  Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 3]
+
+Internet-Draft               Composite Certs               December 2018
+
+
+   This document defines the following terms:
+
+   EDNOTE: Look up the standard way to do glossaries in RFCs.
+
+   EDNOTE: I think there's a proper way to reference another RFC or I-D.
+   Look up.
+
+   Traditional Certificate:
+
+   An X.509 certificate conforming to RFC 5280.  In particular, a
+   certificate containing a single subject public key, and a single
+   issuer signature.
+
+   Composite certificate:
+
+   An X.509 certificate containing two or more subject public keys and
+   two or more issuer signatures, for example, as defined in draft-
+   xxxxx-pq-composite-certs-x509.
+
+4.  Comparison with draft-truskovsky-lamps-pq-hybrid-x509
+
+   EDNOTE: This section will explain the differences from
+   [I-D.truskovsky-lamps-pq-hybrid-x509].  IPR Claims should be
+   mentioned here if necessary.  Other things to consider are the things
+   we discussed in an email thread like simplicity and format,
+   inadvertnt implementation errors, algorithm agility.
+
+   (MO): Move to appendix, or to a supporting document?
+
+5.  Composite Certificates
+
+   This section defines a certificate format containing multiple subject
+   public keys and multiple issuer signatures.  This addresses the
+   "algorithm strength uncertainty" concern from Section 2, though the
+   authors note that this mechanism may have prove to have utility
+   beyond the post-quantum migration.
+
+5.1.  Composite Signatures
+
+   EDNOTE: This subsection describes the PKIX Composite Signatures and
+   how they work.  It will also explain how signing a certificate will
+   work and how verification will work.
+
+   CompositeSignatureAlgorithmIdentifierId ::= OBJECT IDENTIFIER ...
+     -- syntax of the algorithm is CompositeSignatureAlgorithm
+   CompositeSignatureAlgorithm ::= SEQUENCE OF AlgorithmIdentifier
+   CompositeSignature ::= BIT STRING
+     -- Bit string encodes a SEQUENCE OF BIT STRING
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 4]
+
+Internet-Draft               Composite Certs               December 2018
+
+
+5.2.  Composite Public Keys
+
+   EDNOTE: This subsection describes the PKIX Composite Public Keys and
+   how they work.
+
+   CompositeSignatureAlgorithm ::= SEQUENCE OF AlgorithmIdentifier
+   CompositePublicKeyId ::= OBJECT IDENTIFIER ...
+   CompositePublicKey ::= BIT STRING
+     -- Bit string encodes SEQUENCE OF SubjectPublicKeyInfo
+
+6.  Parallel PKI hierarchies
+
+   This section defines a PKI hierarchy structure whereby each entity is
+   issued both a classic (traditional single-key) and composite (multi-
+   key, multi-signature) certificate such that non composite-aware
+   clients will continue functioning, and composite-aware clients can
+   detect downgrade attacks.. This addresses the "backwards
+   compatibility" concern from Section 2, though the authors note that
+   this mechanism may have prove to have utility beyond the post-quantum
+   migration.
+
+7.  Certificate Enrollment
+
+   ## PCKS#10 {#sec-p10} EDNOTE: This subsection talks about the new CSR
+   attributes.  It will also talk about how requesting these certs will
+   work.
+
+   Once an entity in the PKI has a valid composite certificate, it MAY
+   send subsequent certificate enrollment requests for traditional
+   certificates containing a public key from the composite certificate
+   using the same DN.  If the CA has previously issued one or more
+   currently valid composite certificates for the same entity,
+   containing that public key, and containing the same list of SANs,
+   then it MUST include one "wtv_we_call_it" extension pointing to each
+   such certificate, and MUST set the certificate expiry date to be not
+   later than the expiry date of the referenced composite certificate
+   with the {earliest expiry date?, latest expiry date?}.
+
+8.  Certificate Revocation
+
+   EDNOTE: This subsection will talk about compromises of keys,
+   revocation and how recovation will be verified.
+
+8.1.  Certificate Revocation Lists (CRLs)
+
+   EDNOTE: A mention to OCSP implications should be made.
+
+
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 5]
+
+Internet-Draft               Composite Certs               December 2018
+
+
+   EDNOTE: The mechanism for globally revoking an algorithm should be
+   mentioned, along with the practical suggestion that an algorithm MAY
+   be globally revoked on the composite PKI's CRL, but not on the
+   traditional PKI (unless that suggestion should be entirely moved to
+   the parallel-pkis draft?).  Need to think about backwards-
+   compatibility of this CRL extension?  Do we need to suggest that CAs
+   publish composite and traditional certs on separate CRLs for this
+   reason?
+
+8.2.  End-Entity Requested Revocation
+
+   EDNOTE: Be explicit about whether a single-key revocation request has
+   the authority to revoke the composite cert, and vice-versa.  EDNOTE:
+   We may need to wade into modifications to the CMP / SCEP / EST
+   protocols (but I really hope not).
+
+9.  New Algorithm Identifiers
+
+   EDNOTE: This subsection defines the OIDs for the initial composite
+   algorithm combinations we want to define.
+
+10.  In Practice
+
+   EDNOTE: This section will talk about practical issue of how these
+   certificates will be used.  For example it will talk about the size
+   of these certs and cert chains.  It will explain that if a cert in
+   the chain is a Composite cert then the whole chain needs to be of
+   Composite Certs.  It will also explain that the root CA cert does not
+   have to be of the same algorithms.  The root cert SHOULD NOT be
+   transferred in the authentication exchange to save transport overhead
+   and thus it can be different than the intermediate and leaf certs.
+   It will talk about overhead (size and processing).  It will also
+   discuss backwards compatibility.  It could include a subsection about
+   implementation considerations.
+
+11.  Implications for existing standards
+
+   EDNOTE: This section talks about how protocols like (D)TLS and IKEv2
+   are affected by this specifications.  It will not attempt to solve
+   all these problems, but it will explain the rationale, how things
+   will work and what open problems need to be solved.  It will talk
+   about implications of how to distinguish what cert chain to send.  It
+   will describe how signature_algorithms extension will be used in TLS.
+   What is missing in TLS and IKEv2 like what and how to sign something
+   with the two private keys.  It will discuss overhead (size and
+   processing) as in Section 10.  It will also discuss PKCS#10.
+
+
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 6]
+
+Internet-Draft               Composite Certs               December 2018
+
+
+12.  IANA Considerations
+
+   EDNOTE: This section will include content only if new OIDs or IANA
+   codepoints are asigned for it.
+
+   There are no IANA Considerations for this specification.
+
+   (MO): Won't we need to define OIDs for both composite signatures and
+   composite public keys?
+
+13.  Security Considerations
+
+   EDNOTE: This section includes the Security Considerations.
+
+14.  Contributors
+
+   EDNOTE: This section includes the contributors of this draft so the
+   authors in the first page do not exceed five and thus violate
+   RFC2223-bis.  Example where this happens is RFC1122.  We can have
+   another Editor for this draft.  Doesn't need to be Panos.
+
+   This document incorporates contributions and comments from a large
+   group of experts.  The Editor would especially like to acknowledge
+   the tireless dedication of the following people, who attended many
+   long meetings and generated millions of bytes of electronic mail over
+   the past 3 years months in pursuit of this document: Mike Ounsworth
+   (Entrust Datacard), John Gray (Entrust Datacard), Serge Mister
+   (Entrust Datacard), Scott Fluhrer (Cisco Systems) and Panos
+   Kampanakis (Cisco Systems).
+
+   We are grateful to all, including any contributors who may have been
+   inadvertently omitted from this list.
+
+15.  Acknowledgenents
+
+   EDNOTE: this section include all those that need to be acknowledged
+   in the draft
+
+16.  References
+
+16.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 7]
+
+Internet-Draft               Composite Certs               December 2018
+
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+16.2.  Informative References
+
+   [I-D.truskovsky-lamps-pq-hybrid-x509]
+              Truskovsky, A., Geest, D., Fluhrer, S., Kampanakis, P.,
+              Ounsworth, M., and S. Mister, "Multiple Public-Key
+              Algorithm X.509 Certificates", draft-truskovsky-lamps-pq-
+              hybrid-x509-01 (work in progress), August 2018.
+
+Author's Address
+
+   Panos Kampanakis
+   Cisco Systems
+
+   Email: pkampana@cisco.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Kampanakis (Editor)       Expires June 27, 2019                 [Page 8]
