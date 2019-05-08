@@ -1,21 +1,29 @@
 
 docName = draft-xxxxx-pq-parallel-pkis-x509
 
-
-default: txt
+default: all
 
 txt: $(docName).txt
 
-draft-xxxxx-pq-composite-certs-x509.txt: $(docName).mkd
+$(docName).txt: $(docName).mkd
 	kdrfc $(docName).mkd
-
 
 
 xml: $(docName).xml
 
-draft-xxxxx-pq-composite-certs-x509.xml: $(docName).mkd
+$(docName).xml: $(docName).mkd
 	 kramdown-rfc2629 $(docName).mkd > $(docName).xml
 
 
+
+html: all # xml
+	# xml2rfc $(docName).xml --basename $(docName) --html
+ # Explicitely aliasing this to `all` so that a .txt is always generated, because that should be committed to git for other people's ease of editing.
+
+all: xml
+	xml2rfc $(docName).xml --basename $(docName) --html --text
+
+
 clean:
-	rm $(docName).xml $(docName).txt
+	rm -f $(docName).xml $(docName).html # $(docName).txt
+	# Explicitely not deleting the .txt because that should be committed to git for other people's ease of editing.
